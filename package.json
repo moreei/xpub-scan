@@ -1,0 +1,16 @@
+{
+  "name": "xpub-scan",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts"
+  },
+  "author": "Morei",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^18.18.5",
+    "tsup": "^7.2.0",
+    "typescript": "^5.2.2"
+  }
+}
