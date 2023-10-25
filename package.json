@@ -4,13 +4,17 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "tsup src/index.ts --format cjs,esm --dts"
+    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "lint": "tsc"
   },
   "author": "Morei",
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^18.18.5",
+    "eslint": "^8.52.0",
+    "prettier": "^3.0.3",
     "tsup": "^7.2.0",
-    "typescript": "^5.2.2"
+    "typescript": "^5.2.2",
+    "vitest": "^0.34.6"
   }
 }
