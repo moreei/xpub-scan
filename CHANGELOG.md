@@ -1,5 +1,12 @@
 # xpub-scanner
 
+## 0.0.7
+
+### Patch Changes
+
+- 34ad30f: Hey
+- 34ad30f: xpubScan
+
 ## 0.0.6
 
 ### Patch Changes
