@@ -1,5 +1,0 @@
----
-"xpub-scanner": patch
----
-
-Hey
