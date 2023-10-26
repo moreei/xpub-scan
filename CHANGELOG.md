@@ -1,5 +1,11 @@
 # xpub-scanner
 
+## 0.0.6
+
+### Patch Changes
+
+- 12aebdb: Fix
+
 ## 0.0.5
 
 ### Patch Changes
