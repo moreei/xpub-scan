@@ -22,7 +22,6 @@ export const currencies = {
       DerivationMode.NATIVE,
     ],
     precision: 10 ** 8,
-    utxo_based: true,
   },
   bch: {
     name: "Bitcoin Cash",
@@ -31,7 +30,6 @@ export const currencies = {
     network_testnet: coininfo.bitcoincash.test.toBitcoinJS(),
     derivationModes: [DerivationMode.BCH],
     precision: 10 ** 8,
-    utxo_based: true,
   },
   ltc: {
     name: "Litecoin",
@@ -44,14 +42,6 @@ export const currencies = {
       DerivationMode.NATIVE,
     ],
     precision: 10 ** 8,
-    utxo_based: true,
-  },
-  eth: {
-    name: "Ethereum",
-    symbol: "ETH",
-    precision: 10 ** 18,
-    utxo_based: false,
-    derivationModes: [DerivationMode.ETHEREUM],
   },
   doge: {
     name: "Dogecoin",
@@ -59,7 +49,6 @@ export const currencies = {
     network_mainnet: coininfo.dogecoin.main.toBitcoinJS(),
     network_testnet: coininfo.dogecoin.test.toBitcoinJS(),
     precision: 10 ** 8,
-    utxo_based: true,
     derivationModes: [DerivationMode.DOGECOIN],
   },
 };

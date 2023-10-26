@@ -1,12 +1,8 @@
-import * as dotenv from "dotenv";
-import { Currency } from "../models/currency";
-
 // ┏━━━━━━━━━┓
 // ┃ GENERAL ┃
 // ┗━━━━━━━━━┛
 
 const VERBOSE = false;
-const ETH_FIXED_PRECISION = 10; // Decimal places for ETH (recommended for Crypto APIs provider: 10)
 
 // max number of addresses to probe when checking a possible gap between derivation indices
 // (that is: range of indices not used for derivation)
@@ -71,34 +67,20 @@ const DERIVATION_SCOPE = {
 const EXTERNAL_EXPLORERS_URLS = {
   general: "https://live.blockcypher.com/{currency}/{type}/{item}",
   bch: "https://blockchair.com/{currency}/{type}/{item}",
-  eth: "https://etherscan.io/{type}/{item}",
 };
 
-// ┏━━━━━━━━━━━━━━━━━━━━━━┓
-// ┃ CONFIGURATION OBJECT ┃
-// ┗━━━━━━━━━━━━━━━━━━━━━━┛
-
-dotenv.config();
 export const configuration = {
-  currency: {} as Currency,
   testnet: false,
   specificDerivationMode: "",
-  externalProviderURL: "",
-  APIKey: process.env.XPUB_SCAN_CUSTOM_API_KEY_V2,
-  providerType: "default",
   silent: false,
   quiet: false,
-  commandLineMode: false,
-  gap_limit: process.env.GAP_LIMIT || DEFAULT_GAP_LIMIT,
-  augmentedImport: false, // augmented JSON to compare smart contract interactions
-  blockHeightUpperLimit: 0, // comparison mode: block height limit
+  gap_limit: DEFAULT_GAP_LIMIT,
 };
 
 export {
   DEFAULT_API_URLS,
   CRYPTOAPIS_URL,
   VERBOSE,
-  ETH_FIXED_PRECISION,
   DERIVATION_SCOPE,
   EXTERNAL_EXPLORERS_URLS,
 };

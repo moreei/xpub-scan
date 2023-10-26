@@ -1,6 +1,6 @@
 import * as bjs from "bitcoinjs-lib";
-// import bchaddr from "bchaddrjs";
-// import bitcore from "bitcore-lib-cash";
+import bchaddr from "bchaddrjs";
+import bitcore from "bitcore-lib-cash";
 import Wallet from "ethereumjs-wallet";
 
 import { DerivationMode } from "../configuration/currencies";
@@ -12,6 +12,7 @@ import BIP32Factory from "bip32";
 import * as ecc from "tiny-secp256k1";
 import bs58 from "bs58check";
 import { publicKeyTweakAdd } from "secp256k1";
+import { Currency } from "../models/currency";
 
 const bip32 = BIP32Factory(ecc);
 
@@ -46,20 +47,19 @@ class BIP32 {
   }
 }
 
-const getPubkeyAt = (xpub: string, account: number, index: number) => {
+const getPubkeyAt = (
+  currency: Currency,
+  xpub: string,
+  account: number,
+  index: number
+) => {
   const buffer = Buffer.from(bs58.decode(xpub));
   const depth = buffer[4];
   const i = buffer.readUInt32BE(9);
   const chainCode = buffer.slice(13, 45);
   const publicKey = buffer.slice(45, 78);
 
-  return new BIP32(
-    publicKey,
-    chainCode,
-    configuration.currency.network,
-    depth,
-    i
-  )
+  return new BIP32(publicKey, chainCode, currency.network, depth, i)
     .derive(account)
     .derive(index).publicKey;
 };
@@ -72,17 +72,18 @@ const getPubkeyAt = (xpub: string, account: number, index: number) => {
  * @returns the derived legacy address
  */
 function getLegacyAddress(
+  currency: Currency,
   xpub: string,
   account: number,
   index: number
 ): string {
-  const publicKeyBuffer: Buffer = getPubkeyAt(xpub, account, index);
+  const publicKeyBuffer: Buffer = getPubkeyAt(currency, xpub, account, index);
 
   const publicKeyHash160: Buffer = bjs.crypto.hash160(publicKeyBuffer);
 
   return bjs.address.toBase58Check(
     publicKeyHash160,
-    configuration.currency.network!.pubKeyHash
+    currency.network!.pubKeyHash
   );
 }
 
@@ -94,6 +95,7 @@ function getLegacyAddress(
  * @returns the derived SegWit address
  */
 function getSegWitAddress(
+  currency: Currency,
   xpub: string,
   account: number,
   index: number
@@ -101,10 +103,10 @@ function getSegWitAddress(
   const { address } = bjs.payments.p2sh({
     redeem: bjs.payments.p2wpkh({
       pubkey: bip32
-        .fromBase58(xpub, configuration.currency.network)
+        .fromBase58(xpub, currency.network)
         .derive(account)
         .derive(index).publicKey,
-      network: configuration.currency.network,
+      network: currency.network,
     }),
   });
 
@@ -119,16 +121,17 @@ function getSegWitAddress(
  * @returns the derived native SegWit address
  */
 function getNativeSegWitAddress(
+  currency: Currency,
   xpub: string,
   account: number,
   index: number
 ): string {
   const { address } = bjs.payments.p2wpkh({
     pubkey: bip32
-      .fromBase58(xpub, configuration.currency.network)
+      .fromBase58(xpub, currency.network)
       .derive(account)
       .derive(index).publicKey,
-    network: configuration.currency.network,
+    network: currency.network,
   });
 
   return String(address);
@@ -142,34 +145,25 @@ function getNativeSegWitAddress(
  * @returns the derived Bitcoin Cash address
  * note: based on https://github.com/go-faast/bitcoin-cash-payments/blob/54397eb97c7a9bf08b32e10bef23d5f27aa5ab01/index.js#L63-L73
  */
-// function getLegacyBitcoinCashAddress(
-//   xpub: string,
-//   account: number,
-//   index: number
-// ): string {
-//   const node = new bitcore.HDPublicKey(xpub);
-//   const child = node.derive(account).derive(index);
-//   const address = new bitcore.Address(
-//     child.publicKey,
-//     bitcore.Networks.livenet
-//   );
+function getLegacyBitcoinCashAddress(
+  xpub: string,
+  account: number,
+  index: number
+): string {
+  const node = new bitcore.HDPublicKey(xpub);
+  const child = node.derive(account).derive(index);
+  const address = new bitcore.Address(
+    child.publicKey,
+    bitcore.Networks.livenet
+  );
 
-//   const addrstr = address.toString().split(":");
+  const addrstr = address.toString().split(":");
 
-//   if (addrstr.length === 2) {
-//     return bchaddr.toLegacyAddress(addrstr[1]);
-//   } else {
-//     throw new Error("Unable to derive cash address for " + address);
-//   }
-// }
-
-/**
- * derive a unique Ethereum address (the first one)
- * @param xpub the xpub from which to derive the Ethereum address
- * @returns the first derived Ethereum address
- */
-function getEthereumAddress(xpub: string): string {
-  return Wallet.fromExtendedPublicKey(xpub).getAddressString();
+  if (addrstr.length === 2 && addrstr[1]) {
+    return bchaddr.toLegacyAddress(addrstr[1]);
+  } else {
+    throw new Error("Unable to derive cash address for " + address);
+  }
 }
 
 /**
@@ -181,6 +175,7 @@ function getEthereumAddress(xpub: string): string {
  * @returns the derived address
  */
 function deriveAddress(
+  currency: Currency,
   derivationMode: DerivationMode,
   xpub: string,
   account?: number,
@@ -196,17 +191,15 @@ function deriveAddress(
 
   switch (derivationMode) {
     case DerivationMode.LEGACY:
-      return getLegacyAddress(xpub, account, index);
+      return getLegacyAddress(currency, xpub, account, index);
     case DerivationMode.SEGWIT:
-      return getSegWitAddress(xpub, account, index);
+      return getSegWitAddress(currency, xpub, account, index);
     case DerivationMode.NATIVE:
-      return getNativeSegWitAddress(xpub, account, index);
-    // case DerivationMode.BCH:
-    //   return getLegacyBitcoinCashAddress(xpub, account, index);
+      return getNativeSegWitAddress(currency, xpub, account, index);
+    case DerivationMode.BCH:
+      return getLegacyBitcoinCashAddress(xpub, account, index);
     case DerivationMode.DOGECOIN:
-      return getLegacyAddress(xpub, account, index);
-    case DerivationMode.ETHEREUM:
-      return getEthereumAddress(xpub);
+      return getLegacyAddress(currency, xpub, account, index);
     case DerivationMode.UNKNOWN:
     /* fallthrough */
     default:

@@ -11,14 +11,7 @@ class OwnAddresses {
   }
 
   addAddress(address: Address) {
-    // here, it is assumed that addresses belonging
-    // to account 1 are internal addresses
-    // (that is: change addresses)
-    if (address.getDerivation().account === 1) {
-      this.internal.push(address.toString());
-    } else {
-      this.external.push(address.toString());
-    }
+    this.external.push(address.toString());
   }
 
   getInternalAddresses() {

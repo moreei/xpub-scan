@@ -1,12 +1,66 @@
-import readline from "readline";
 import chalk from "chalk";
-
+import readline from "readline";
 import { Address } from "./models/address";
-import { Operation } from "./models/operation";
-import { configuration } from "./configuration/settings";
+import BigNumber from "bignumber.js";
 import { Summary } from "./types";
 import { DerivationMode } from "./configuration/currencies";
-import BigNumber from "bignumber.js";
+
+function logStatus(status: string) {
+  console.log(chalk.dim(status));
+}
+
+function transientLine(message?: string) {
+  readline.cursorTo(process.stdout, 0);
+
+  if (message) {
+    process.stdout.write(message);
+  } else {
+    // blank line
+    // ! solution implemented this way to be
+    // ! compatible with Docker
+    process.stdout.write("".padEnd(140, " "));
+    readline.cursorTo(process.stdout, 0);
+  }
+}
+
+// display the active/probed address with its stats
+function updateAddressDetails(address: Address) {
+  // quiet mode: only display full information, once
+
+  const addressStats = address.getStats();
+  if (!addressStats) {
+    return;
+  }
+  // _type_  path  address ...
+  let stats = "";
+  stats = stats.concat(address.toString().padEnd(46, " "));
+
+  // else, display the full line
+  const balance = address.getBalance();
+  const txsCount = addressStats.txsCount;
+  const fundedSum = renderAmount(addressStats.funded);
+
+  transientLine(/* delete line to display complete info */);
+
+  // ... +{total funded} ←
+  stats = stats
+    .concat(txsCount.toString().padEnd(16, " "))
+    .concat("+")
+    .concat(balance.toString().padEnd(16, " "))
+    .concat("+")
+    .concat(fundedSum.padEnd(14, " ")) // an active address has necessarily been funded,
+    .concat(" ←"); // thus this information is mandatory
+
+  // optional: spent sum
+  if (addressStats.spent) {
+    const spentSum = renderAmount(addressStats.spent);
+
+    // ... -{total spent} →
+    stats = stats.concat("\t-").concat(spentSum.padEnd(14, " ")).concat(" →");
+  }
+
+  console.log(stats);
+}
 
 function renderAmount(amount: BigNumber): string {
   // Currently, this function does not convert the amounts
@@ -25,89 +79,8 @@ function renderAmount(amount: BigNumber): string {
   }
 }
 
-// display the active/probed address with its stats
-function updateAddressDetails(address: Address) {
-  // silent mode: do not display anything
-  if (configuration.silent) {
-    return;
-  }
-
-  const addressStats = address.stats;
-
-  // quiet mode: only display full information, once
-  if (!addressStats) {
-    return;
-  }
-
-  const derivationMode = address.getDerivationMode();
-  const account = address.getDerivation().account;
-  const index = address.getDerivation().index;
-
-  const derivationPath = "m/"
-    .concat(String(account))
-    .concat("/")
-    .concat(String(index));
-
-  // _type_  path  address ...
-  let stats = "";
-
-  if (configuration.currency.utxo_based) {
-    //    _{derivation mode}_  {derivation path}  {address}  [{cash address}]...
-    stats = stats
-      .concat(chalk.italic(derivationMode.padEnd(16, " ")))
-      .concat(derivationPath.padEnd(12, " "));
-  } else {
-    stats = stats.concat("\t");
-  }
-
-  const cashAddress = address.asCashAddress();
-
-  if (cashAddress) {
-    stats = stats
-      .concat(address.toString().padEnd(36, " "))
-      .concat(cashAddress.padEnd(46, " "));
-  } else {
-    stats = stats.concat(address.toString().padEnd(46, " "));
-  }
-
-  if (typeof address.getStats() === "undefined") {
-    // if no stats, display just half of the line
-    if (configuration.commandLineMode) {
-      process.stdout.write(stats);
-    }
-    return;
-  } else {
-    // else, display the full line
-    const balance = address.getBalance();
-    const fundedSum = renderAmount(addressStats.funded);
-
-    transientLine(/* delete line to display complete info */);
-
-    // ... +{total funded} ←
-    stats = stats
-      .concat(balance.toString().padEnd(16, " "))
-      .concat("+")
-      .concat(fundedSum.padEnd(14, " ")) // an active address has necessarily been funded,
-      .concat(" ←"); // thus this information is mandatory
-  }
-
-  // optional: spent sum
-  if (typeof addressStats.spent !== "undefined") {
-    const spentSum = renderAmount(addressStats.spent);
-
-    // ... -{total spent} →
-    stats = stats.concat("\t-").concat(spentSum.padEnd(14, " ")).concat(" →");
-  }
-
-  console.log(stats);
-}
-
 // display the list of UTXOs sorted by date (reverse chronological order)
 function showSortedUTXOs(sortedUTXOs: Array<Address>) {
-  if (configuration.silent || !configuration.currency.utxo_based) {
-    return;
-  }
-
   console.log(chalk.bold("\nUTXOs\n"));
 
   if (sortedUTXOs.length === 0) {
@@ -119,113 +92,8 @@ function showSortedUTXOs(sortedUTXOs: Array<Address>) {
     updateAddressDetails(utxo);
   });
 }
-
-// display the list of operations sorted by date (reverse chronological order)
-function showSortedOperations(sortedOperations: Array<Operation>) {
-  if (configuration.silent) {
-    return;
-  }
-
-  process.stdout.write(chalk.bold("\nOperations History"));
-
-  if (typeof configuration.APIKey === "undefined") {
-    // warning related to the limitations of the default provider
-    process.stdout.write(
-      chalk.redBright(
-        " (only the last ~50 operations by address are displayed)\n"
-      )
-    );
-  } else {
-    process.stdout.write("\n");
-  }
-
-  const header =
-    "\ndate\t\t\tblock\t\taddress\t\t\t\t\t\treceived (←) [as change from non-sibling (c)] | sent (→) to self (⮂) or sibling (↺)";
-  console.log(chalk.grey(header));
-
-  sortedOperations.forEach((op) => {
-    const amount = renderAmount(op.amount).padEnd(12, " ");
-
-    // {date} {block} {address} [{cash address}]
-    let status = op
-      .getDate()
-      .padEnd(20, " ")
-      .concat("\t")
-      .concat(String(op.block).padEnd(8, " "));
-
-    const address = op.getAddress();
-    const cashAddress = op.cashAddress;
-
-    if (typeof cashAddress !== "undefined") {
-      status = status
-        .concat(address.padEnd(36, " "))
-        .concat(cashAddress.padEnd(46, " "));
-    } else {
-      status = status.concat("\t").concat(address.padEnd(42, " ")).concat("\t");
-    }
-
-    if (op.getOperationType().includes("Received")) {
-      // ... +{amount} ←
-      status = status.concat("+").concat(amount.padEnd(14, " ")).concat(" ←");
-
-      if (op.operationType === "Received (non-sibling to change)") {
-        status = status.concat(" c");
-      }
-    } else {
-      // ... -{amount} →|⮂|↺
-      status = status.concat("-").concat(amount.padEnd(14, " "));
-
-      const operationType = op.getOperationType();
-
-      if (operationType === "Sent to self") {
-        // case 1. Sent to the same address
-        status = status.concat(" ⮂");
-      } else if (operationType === "Sent to sibling") {
-        // case 2. Sent to a sibling address
-        // (different non-change address belonging to same xpub)
-        status = status.concat(" ↺");
-      } else if (operationType === "Failed to send") {
-        // case 3. Failed to send (Ethereum)
-        status = status.concat(" x");
-      } else {
-        // case 4. Sent to external address
-        status = status.concat(" →");
-      }
-    }
-
-    if (op.getOperationType().includes("token")) {
-      // Token (Ethereum)
-      status = status.concat(" token");
-    }
-
-    if (op.getOperationType().includes("dapp")) {
-      // Token (Ethereum)
-      status = status.concat(" dapp");
-    }
-
-    if (op.getOperationType().includes("Swapped")) {
-      // Swapped (Ethereum)
-      status = status.concat(" Swapped");
-    }
-
-    if (op.getOperationType().includes("SCI")) {
-      // SCI (Ethereum)
-      status = status.concat(" sci");
-    }
-
-    console.log(status);
-  });
-
-  console.log(chalk.bold("\nNumber of transactions\n"));
-  console.log(chalk.whiteBright(sortedOperations.length));
-}
-
 // display the summary: total balance by address type
 function showSummary(derivationMode: DerivationMode, totalBalance: BigNumber) {
-  if (configuration.silent) {
-    return;
-  }
-
   const derivation = derivationMode.toString();
   const balance = renderAmount(new BigNumber(totalBalance));
 
@@ -242,52 +110,8 @@ function showSummary(derivationMode: DerivationMode, totalBalance: BigNumber) {
   }
 }
 
-function logStatus(status: string) {
-  if (configuration.silent) {
-    return;
-  }
-
-  console.log(chalk.dim(status));
-}
-
-// overwrite last displayed line
-// (no message: delete the line)
-//
-// note: if this implementation is modified,
-// always check the resulting behavior in
-// Docker
-function transientLine(message?: string) {
-  if (configuration.silent || configuration.quiet) {
-    return;
-  }
-
-  readline.cursorTo(process.stdout, 0);
-
-  if (typeof message !== "undefined") {
-    process.stdout.write(message);
-  } else {
-    // blank line
-    // ! solution implemented this way to be
-    // ! compatible with Docker
-    process.stdout.write("".padEnd(140, " "));
-    readline.cursorTo(process.stdout, 0);
-  }
-}
-
-function showResults(
-  sortedUTXOs: Array<Address>,
-  sortedOperations: Array<Operation>,
-  summary: Array<Summary>,
-  balanceOnly: boolean
-) {
-  if (configuration.silent) {
-    return;
-  }
-
+function showResults(sortedUTXOs: Array<Address>, summary: Array<Summary>) {
   showSortedUTXOs(sortedUTXOs);
-  if (!balanceOnly) {
-    showSortedOperations(sortedOperations);
-  }
 
   console.log(chalk.bold("\nSummary\n"));
   for (const total of summary) {
@@ -295,11 +119,4 @@ function showResults(
   }
 }
 
-export {
-  showSummary,
-  logStatus,
-  updateAddressDetails,
-  showSortedOperations,
-  transientLine,
-  showResults,
-};
+export { logStatus, transientLine, updateAddressDetails, showResults };
