@@ -22,35 +22,33 @@ const showDiff = (
   actualBalance: number,
   importedBalance?: string,
   comparisons?: Array<Comparison>,
-  diff?: boolean,
+  diff?: boolean
 ): number => {
   let exitCode = 0;
 
   // check operations
   if (comparisons && diff) {
     const operationsMismatches = comparisons.filter(
-      (comparison) => !comparison.status.startsWith("Match"),
+      (comparison) => !comparison.status.startsWith("Match")
     );
 
     const mismatches = [];
 
     for (const o of operationsMismatches) {
       mismatches.push({
-        imported:
-          typeof o.imported !== "undefined"
-            ? {
-                ...o.imported,
-                amount: o.imported.amount.toFixed(),
-              }
-            : undefined,
-        actual:
-          typeof o.actual !== "undefined"
-            ? {
-                ...o.actual,
-                cashAddress: toUnprefixedCashAddress(o.actual.address),
-                amount: o.actual.amount.toFixed(),
-              }
-            : undefined,
+        imported: o.imported
+          ? {
+              ...o.imported,
+              amount: o.imported.amount.toFixed(),
+            }
+          : undefined,
+        actual: o.actual
+          ? {
+              ...o.actual,
+              cashAddress: toUnprefixedCashAddress(o.actual.getAddress()),
+              amount: o.actual.amount.toFixed(),
+            }
+          : undefined,
         status: o.status,
       });
     }
@@ -78,7 +76,7 @@ const showDiff = (
       exitCode += 2;
     } else {
       console.log(
-        chalk.greenBright("Diff [ OK ]: balances match: ".concat(actual)),
+        chalk.greenBright("Diff [ OK ]: balances match: ".concat(actual))
       );
     }
   }
