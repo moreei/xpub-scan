@@ -1,0 +1,5 @@
+---
+"xpub-scanner": patch
+---
+
+Fix

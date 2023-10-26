@@ -1,4 +1,4 @@
-import { getArgs } from "./input/args";
+// import { getArgs } from "./input/args";
 import { Scanner } from "./actions/scanner";
 import { ScanResult, ScannerArguments } from "./types";
 
