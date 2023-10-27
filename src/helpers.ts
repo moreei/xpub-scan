@@ -1,8 +1,4 @@
-import {
-  CRYPTOAPIS_URL,
-  DEFAULT_API_URLS,
-  configuration,
-} from "./configuration/settings";
+import { DEFAULT_API_URLS, configuration } from "./configuration/settings";
 import axios from "axios";
 import chalk from "chalk";
 import { currencies } from "./configuration/currencies";
@@ -10,8 +6,6 @@ import { Currency } from "./models/currency";
 import BigNumber from "bignumber.js";
 
 function getExternalProviderURL(currency: Currency) {
-  //   return CRYPTOAPIS_URL.replace("{network}", getNetworkLabel());
-
   // default provider
   if (
     currency.symbol === currencies.btc.symbol ||
@@ -98,7 +92,7 @@ function getCurrency(xpub: string, currency?: string) {
       // Bitcoin mainnet
       currencyModel = {
         name: currencies.btc.name,
-        symbol: currencies.btc.symbol,
+        symbol: "BTC",
         network: currencies.btc.network_mainnet,
         precision: currencies.btc.precision,
         derivationModes: currencies.btc.derivationModes,
@@ -107,7 +101,7 @@ function getCurrency(xpub: string, currency?: string) {
       configuration.testnet = true;
       currencyModel = {
         name: currencies.btc.name,
-        symbol: currencies.btc.symbol,
+        symbol: "BTC",
         network: currencies.btc.network_testnet,
         precision: currencies.btc.precision,
         derivationModes: currencies.btc.derivationModes,
@@ -116,7 +110,7 @@ function getCurrency(xpub: string, currency?: string) {
       // Litecoin
       currencyModel = {
         name: currencies.ltc.name,
-        symbol: currencies.ltc.symbol,
+        symbol: "LTC",
         network: currencies.ltc.network_mainnet,
         precision: currencies.ltc.precision,
         derivationModes: currencies.ltc.derivationModes,
@@ -125,7 +119,7 @@ function getCurrency(xpub: string, currency?: string) {
       // Dogecoin
       currencyModel = {
         name: currencies.doge.name,
-        symbol: currencies.doge.symbol,
+        symbol: "DOGE",
         network: currencies.doge.network_mainnet,
         precision: currencies.doge.precision,
         derivationModes: currencies.doge.derivationModes,
@@ -138,7 +132,7 @@ function getCurrency(xpub: string, currency?: string) {
     if (currency === "BCH") {
       currencyModel = {
         name: currencies.bch.name,
-        symbol: currencies.bch.symbol,
+        symbol: "BCH",
         network: currencies.bch.network_mainnet,
         precision: currencies.bch.precision,
         derivationModes: currencies.bch.derivationModes,

@@ -1,6 +1,7 @@
 import BigNumber from "bignumber.js";
 import { DerivationMode } from "./configuration/currencies";
 import { Address } from "./models/address";
+import { Currency } from "./models/currency";
 
 export interface Summary {
   derivationMode: DerivationMode;
@@ -13,6 +14,7 @@ export interface ScanResult {
 
 export interface ScanMeta {
   xpub: string;
+  currency: Currency;
   date: Date;
   mode: string;
   derivationMode: string;

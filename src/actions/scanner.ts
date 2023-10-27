@@ -19,7 +19,6 @@ export class Scanner {
 
     const actualAddresses = scanResult.addresses; // active addresses belonging to the xpub
 
-    console.log("actualAddresses", actualAddresses.length);
     const summary = scanResult.summary; // summary: balance per derivation path
 
     display.showResults(actualAddresses, summary);
@@ -31,6 +30,7 @@ export class Scanner {
 
     const meta: ScanMeta = {
       xpub: this.xpub,
+      currency,
       date: this.now,
       mode,
       balanceOnly: true,

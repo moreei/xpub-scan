@@ -3,7 +3,7 @@ import { DerivationMode } from "../configuration/currencies";
 
 interface Currency {
   name: string;
-  symbol: string;
+  symbol: "BTC" | "BCH" | "LTC" | "DOGE";
   network: bjs.networks.Network;
   derivationModes: Array<DerivationMode>;
   precision: number;
