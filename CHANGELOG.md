@@ -1,5 +1,11 @@
 # xpub-scanner
 
+## 0.1.0
+
+### Minor Changes
+
+- 9f37a29: Add Currency To Results
+
 ## 0.0.8
 
 ### Patch Changes
