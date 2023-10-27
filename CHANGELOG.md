@@ -1,5 +1,11 @@
 # xpub-scanner
 
+## 0.0.8
+
+### Patch Changes
+
+- 48b668d: Fix
+
 ## 0.0.7
 
 ### Patch Changes
