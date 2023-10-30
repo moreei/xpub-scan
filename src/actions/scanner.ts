@@ -1,4 +1,5 @@
 import * as checkBalances from "./checkBalance";
+import * as checkAddress from "./checkAddress";
 import * as display from "../display";
 
 import { ScanData, ScanMeta, ScanResult } from "../types";
@@ -43,5 +44,11 @@ export class Scanner {
     };
 
     return { meta, data };
+  }
+
+  derivedFromXpub(providedAddress: string) {
+    const currency = getCurrency(this.xpub);
+    const result = checkAddress.run(currency, this.xpub, providedAddress);
+    return result;
   }
 }

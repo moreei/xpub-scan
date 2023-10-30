@@ -20,6 +20,7 @@ export const currencies = {
       DerivationMode.LEGACY,
       DerivationMode.SEGWIT,
       DerivationMode.NATIVE,
+      //   DerivationMode
     ],
     precision: 10 ** 8,
   },

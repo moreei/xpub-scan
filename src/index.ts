@@ -7,3 +7,9 @@ export const xpubScan = async (xpub: string) => {
   const results = await scanner.scan();
   return results;
 };
+
+export const derivedFromXpub = (xpub: string, providedAddress: string) => {
+  const scanner = new Scanner(xpub);
+  const result = scanner.derivedFromXpub(providedAddress);
+  return result;
+};
