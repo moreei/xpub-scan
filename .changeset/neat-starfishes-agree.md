@@ -1,5 +1,0 @@
----
-"xpub-scanner": minor
----
-
-derivedFromXpub
