@@ -1,5 +1,15 @@
 # xpub-scanner
 
+## 0.2.0
+
+### Minor Changes
+
+- fcbaf90: derivedFromXpub
+
+### Patch Changes
+
+- e7ffe6f: Fix
+
 ## 0.1.0
 
 ### Minor Changes
