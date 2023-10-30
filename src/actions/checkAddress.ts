@@ -4,13 +4,13 @@ import { getDerivationMode, deriveAddress } from "./deriveAddresses";
 import { DERIVATION_SCOPE } from "../configuration/settings";
 import { Currency } from "../models/currency";
 
-interface Result {
+export interface Result {
   partial?: string;
   account?: number;
   index?: number;
 }
 
-interface SearchRange {
+export interface SearchRange {
   account: {
     min: number;
     max: number;
@@ -168,7 +168,11 @@ function search(
   return {};
 }
 
-function run(currency: Currency, xpub: string, providedAddress: string) {
+function run(
+  currency: Currency,
+  xpub: string,
+  providedAddress: string
+): Result {
   if (typeof DERIVATION_SCOPE === "undefined") {
     showError("DERIVATION_SCOPE setting is not defined");
   }
